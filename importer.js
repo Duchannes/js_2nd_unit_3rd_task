@@ -12,10 +12,12 @@ class Importer {
   // Function that listens to the events of DirWatcher and, when any .csv file is changed, writes it in a .json format at the specified path
   listen (outPath) {
     this.watcher.on('dirwatcher:changed', (data) => {
+      console.log(`${data} was changed`);
       const filename = data.substr(data.lastIndexOf('\\'));
       const path = filename.replace('.csv', '.json');
       this.lastChange = this.csvToJsonParser(data);
       fs.writeFileSync(outPath + path, JSON.stringify(this.lastChange, null, ' '), 'utf-8');
+      console.log(`${outPath + path} was created`);
     });
   }
 
