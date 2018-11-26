@@ -1,22 +1,31 @@
 const EventEmitter = require('events');
+const fs = require('fs');
+const chokidar = require('chokidar');
 
 class DirWatcher extends EventEmitter {
-  constructor (path, delay) {
+  constructor () {
     super();
-    const chokidar = require('chokidar');
+    this.watcher = null;
+  }
+
+  // Function that listens to the events of chokidar and generate own events after that
+  watch (path, delay) {
+    console.log('Start watching');
     this.watcher = chokidar.watch(path + '/*.csv', {
       followSymlinks: false,
-      cwd: '.',
       usePolling: true,
+      interval: delay,
       binaryInterval: delay
     });
-    this.watcher
-      .on('change', (path) => {
-        this.emit('dirwatcher:changed', path);
-      });
+    this.watcher.on('change', file => this.emit('dirwatcher:changed', fs.realpathSync(file)));
+  }
+
+  // Function that stop to listens chokidar
+  stopWatch () {
+    this.watcher.close();
+    this.watcher = null;
+    console.log('Stop watching');
   }
 }
 
-const a = new DirWatcher('./data', 100);
-a.startWatch();
-a.on('dirwatcher:changed', data => console.log('data = ', data));
+module.exports = DirWatcher;
